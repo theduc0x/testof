@@ -1,3 +1,12 @@
 <resources>
     <string name="app_name">TestOnOff</string>
+    <string name="tv_name_device">Name device</string>
+    <string name="tv_do_c">°C</string>
+    <string name="tv_mode_cooling">Cooling</string>
+    <string name="tv_speed_auto">Speed Auto</string>
+    <string name="tv_mode">Mode</string>
+    <string name="tv_temp">Temp</string>
+    <string name="tv_speed">Speed</string>
+    <string name="tv_power_on">Power ON</string>
+    <string name="tv_power_off">Power OFF</string>
 </resources>

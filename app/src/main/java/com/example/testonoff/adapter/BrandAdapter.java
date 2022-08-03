@@ -1,4 +1,4 @@
-package com.example.testonoff;
+package com.example.testonoff.adapter;
 
 import android.annotation.SuppressLint;
 import android.view.LayoutInflater;
@@ -9,6 +9,9 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.testonoff.R;
+import com.example.testonoff.my_interface.IItemOnClickOpenBrand;
 
 import java.util.ArrayList;
 

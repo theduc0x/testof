@@ -14,7 +14,9 @@ import android.util.Log;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.example.testonoff.adapter.BrandAdapter;
 import com.example.testonoff.models.ACDetail;
+import com.example.testonoff.my_interface.IItemOnClickOpenBrand;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -29,13 +31,16 @@ public class MainActivity extends AppCompatActivity {
     BrandAdapter adapterDB;
     ArrayList<String> listName;
     public static ArrayList<ACDetail> listAC;
+    public static ArrayList<String> listNameDevice;
+    public static ACDetail acDetail;
+    public static ArrayList<ACDetail> listRemoteAC;
 
     // Tên của CSDL
     String DB_NAME = "ACLOCAL.db";
     // Tên thư mục database, lưu trữ ứng dụng trong thư mục cài đặt gốc
     private String DB_PATH = "/databases/";
     // SQLDatabase để truy vấn và tương tác với dữ liệu
-    SQLiteDatabase database = null;
+    public static SQLiteDatabase database = null;
 
     private static int[] raw = {};
 
@@ -53,6 +58,7 @@ public class MainActivity extends AppCompatActivity {
         }
         // sao chép dữ liệu từ database vào
         copyDataBase();
+        database = openOrCreateDatabase(DB_NAME, MODE_PRIVATE, null);
         showListBrandData();
     }
 
@@ -64,10 +70,13 @@ public class MainActivity extends AppCompatActivity {
         rvBrand = findViewById(R.id.lv_name);
         listName = new ArrayList<>();
         listAC = new ArrayList<>();
+        listNameDevice = new ArrayList<>();
+        listRemoteAC = new ArrayList<>();
         adapterDB = new BrandAdapter(new IItemOnClickOpenBrand() {
             @Override
             public void onClickOpenBrand(String brand) {
                 showListDeviceBrand(brand);
+                showListDevice(brand);
                 Intent toPower = new Intent(MainActivity.this, PowerActivity.class);
                 startActivity(toPower);
             }
@@ -93,44 +102,89 @@ public class MainActivity extends AppCompatActivity {
             String name = cursor.getString(0);
             listName.add(name);
         }
-        Toast.makeText(this, listName.size()+"", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, listName.size() + "", Toast.LENGTH_SHORT).show();
         cursor.close();
         adapterDB.notifyDataSetChanged();
     }
 
-    private void showListDeviceBrand(String brand) {
+    public void showListDeviceBrand(String brand) {
         database = openOrCreateDatabase(DB_NAME, MODE_PRIVATE, null);
-        Cursor cursor = database.rawQuery("SELECT * FROM remote WHERE brand = ?",
-                new String[] {brand});
+        Cursor cursor =
+                database.rawQuery("SELECT DISTINCT fragment, button_fragment, " +
+                                "frequency, main_frame FROM remote WHERE brand = ?",
+                        new String[]{brand});
         listAC.clear();
         while (cursor.moveToNext()) {
-            String fragment = cursor.getString(1);
-            String button_fragment = cursor.getString(2);
-            String brandD = cursor.getString(4);
-            String frequency = cursor.getString(5);
-            String main_frame = cursor.getString(6);
-            listAC.add(new ACDetail(fragment, button_fragment, brandD, frequency, main_frame));
+            String fragment = cursor.getString(0);
+            String button_fragment = cursor.getString(1);
+            String frequency = cursor.getString(2);
+            String main_frame = cursor.getString(3);
+            listAC.add(new ACDetail(fragment, button_fragment, brand, frequency, main_frame));
         }
         cursor.close();
     }
 
-    public ArrayList<ACDetail> getAC(String brand, String fragment) {
-        ArrayList<ACDetail> listAdd;
-        listAdd = new ArrayList<>();
-        database = openOrCreateDatabase(DB_NAME, MODE_PRIVATE, null);
-        Cursor cursor = database.rawQuery("SELECT * FROM remote WHERE brand = ? & fragment = ?",
-                new String[] {brand, fragment});
+    public static void showACDetail(String fragment, String button_fragment, String button_fragment2) {
+        Cursor cursor =
+                database.rawQuery("SELECT DISTINCT fragment, button_fragment, frequency, " +
+                                "main_frame FROM remote WHERE fragment = ? AND " +
+                                "(button_fragment = ? OR button_fragment = ?)",
+                        new String[]{fragment, button_fragment, button_fragment2});
+        acDetail = null;
         while (cursor.moveToNext()) {
-            String fragmentt = cursor.getString(1);
-            String button_fragment = cursor.getString(2);
-            String brandD = cursor.getString(4);
-            String frequency = cursor.getString(5);
-            String main_frame = cursor.getString(6);
-            listAdd.add(new ACDetail(fragmentt, button_fragment, brandD, frequency, main_frame));
+            String fragmentt = cursor.getString(0);
+            String button_fragmentt = cursor.getString(1);
+            String frequency = cursor.getString(2);
+            String main_frame = cursor.getString(3);
+            acDetail = new ACDetail(fragmentt, button_fragmentt, null, frequency, main_frame);
         }
         cursor.close();
-        return listAdd;
     }
+
+    public void showListDevice(String brand) {
+        Log.d("addd", brand);
+        brand = brand.trim();
+        database = openOrCreateDatabase(DB_NAME, MODE_PRIVATE, null);
+        Cursor cursor = database.rawQuery(" SELECT DISTINCT fragment FROM remote WHERE brand = ?",
+                new String[]{brand});
+        listNameDevice.clear();
+        while (cursor.moveToNext()) {
+            String fragment = cursor.getString(0);
+            listNameDevice.add(fragment);
+            listNameDevice.add(fragment);
+        }
+        cursor.close();
+    }
+    // cho tất cả các sự kiện của một loại device
+
+    /**
+     *
+     * @param fragment là tên loại thiết bị để show lên danh sách các button của thiết bị đó
+     */
+    public static void showListRemoteDetail(String fragment) {
+//        Cursor cursor = database.rawQuery("SELECT DISTINCT fragment, button_fragment," +
+//                        " frequency, main_frame FROM remote WHERE fragment = ?",
+//                new String[]{fragment});
+        Cursor cursor = database.rawQuery("SELECT DISTINCT fragment, button_fragment, " +
+                        "frequency, main_frame FROM remote WHERE fragment = ?" +
+                        "AND ((button_fragment like \"%F%\" OR button_fragment = \"Power\" " +
+                        "OR button_fragment = \"PowerOn\" OR button_fragment = \"Delay\" " +
+                        "OR button_fragment like \"MODE%\") OR button_fragment like \"T%\")",
+                new String[]{fragment});
+        listRemoteAC.clear();
+        while (cursor.moveToNext()) {
+            String fragmentt = cursor.getString(0);
+            String button_fragmentt = cursor.getString(1);
+            String frequency = cursor.getString(2);
+            String main_frame = cursor.getString(3);
+
+            listRemoteAC
+                    .add(new ACDetail(fragmentt, button_fragmentt, null, frequency, main_frame));
+
+        }
+        cursor.close();
+    }
+
 
     private void copyDataBase() {
         try {
