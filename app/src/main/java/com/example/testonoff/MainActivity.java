@@ -10,10 +10,14 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.hardware.ConsumerIrManager;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 
+import com.example.testonoff.Util.Utils;
 import com.example.testonoff.adapter.BrandAdapter;
 import com.example.testonoff.models.ACDetail;
 import com.example.testonoff.my_interface.IItemOnClickOpenBrand;
@@ -25,7 +29,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
-    Button btOn, btOff;
+    EditText etSearch;
     ConsumerIrManager ir;
     RecyclerView rvBrand;
     BrandAdapter adapterDB;
@@ -48,8 +52,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        database = openOrCreateDatabase(DB_NAME, MODE_PRIVATE, null);
         initView();
-
         File dbFile = getDatabasePath(DB_NAME);
         // Nếu dbFile chưa tồn tại thì chép vào
         // Nếu đã tồn tại thì xóa đi làm lại
@@ -58,14 +62,32 @@ public class MainActivity extends AppCompatActivity {
         }
         // sao chép dữ liệu từ database vào
         copyDataBase();
-        database = openOrCreateDatabase(DB_NAME, MODE_PRIVATE, null);
+
         showListBrandData();
+
+        etSearch.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                adapterDB.getFilter().filter(etSearch.getText());
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                adapterDB.getFilter().filter(etSearch.getText());
+            }
+        });
+
+        getListModeData();
     }
 
 
     private void initView() {
-        btOn = findViewById(R.id.bt_on);
-        btOff = findViewById(R.id.bt_off);
+        etSearch = findViewById(R.id.et_search_brand);
         ir = (ConsumerIrManager) getSystemService(CONSUMER_IR_SERVICE);
         rvBrand = findViewById(R.id.lv_name);
         listName = new ArrayList<>();
@@ -88,16 +110,22 @@ public class MainActivity extends AppCompatActivity {
         rvBrand.setAdapter(adapterDB);
 
         adapterDB.setData(listName);
+        // Add các giá trị speed
+        Utils.getSpeedData();
     }
 
     @SuppressLint("NotifyDataSetChanged")
     private void showListBrandData() {
+        Cursor cursor;
 //         Mở CSDL (nếu chưa có thì tạo mới)
-        database = openOrCreateDatabase(DB_NAME, MODE_PRIVATE, null);
-        Cursor cursor = database.rawQuery("SELECT DISTINCT brand FROM remote", null);
-
+//        if (!brand.equals("")) {
+//            cursor = database.rawQuery("SELECT DISTINCT brand " +
+//                    "FROM remote WHERE brand like ?",
+//                    new String[] {brand + "%"});
+//        } else {
+            cursor = database.rawQuery("SELECT DISTINCT brand FROM remote", null);
+//        }
         listName.clear();
-
         while (cursor.moveToNext()) {
             String name = cursor.getString(0);
             listName.add(name);
@@ -180,7 +208,21 @@ public class MainActivity extends AppCompatActivity {
 
             listRemoteAC
                     .add(new ACDetail(fragmentt, button_fragmentt, null, frequency, main_frame));
+        }
+        cursor.close();
+    }
 
+    /**
+     * Trả về giá trị list MODE có trong database
+     */
+    public void getListModeData() {
+        Cursor cursor = database.rawQuery("SELECT DISTINCT button_fragment " +
+                        "FROM remote WHERE button_fragment like \"Mode%\"",
+                null);
+        Utils.listModeData.clear();
+        while (cursor.moveToNext()) {
+            String button_fragmentt = cursor.getString(0);
+            Utils.listModeData.add(button_fragmentt);
         }
         cursor.close();
     }

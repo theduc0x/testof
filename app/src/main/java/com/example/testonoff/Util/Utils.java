@@ -4,10 +4,14 @@ import android.hardware.ConsumerIrManager;
 import android.util.Log;
 
 import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.stream.Stream;
 
 public class Utils {
+    public static String TEMP_INCREASE = "increased temperature";
+    public static String TEMP_REDUCE = "reduce the temperature";
+
     public static String POWER_ON = "PowerOn";
     public static String POWER_OFF = "PowerOff";
     public static String POWER = "Power";
@@ -37,6 +41,16 @@ public class Utils {
     public static String MODE_HEAT_TEXT = "Heat";
     public static String MODE_COOLING_TEXT = "Cooling";
 
+    public static String MODE = "Mode";
+    public static String MODE1 = "Mode1";
+    public static String MODE2 = "Mode2";
+    public static String MODE3 = "Mode3";
+    public static String MODE4 = "Mode4";
+    public static String MODE5 = "Mode5";
+
+
+    public static ArrayList<String> listModeData = new ArrayList<>();
+    public static ArrayList<String> listSpeedData = new ArrayList<>();
 
     public static boolean hasIrEmitter(ConsumerIrManager irManager) {
         return irManager.hasIrEmitter();
@@ -48,8 +62,6 @@ public class Utils {
 
     public static int[] convertStringToArrayInt(String s) {
         String[] raw = s.replaceAll("\\s", "").split(",");
-//        String[] parts = s.split(",");
-//        int[] result = Stream.of(parts).mapToInt(Integer::parseInt).toArray()
         int[] results = new int[raw.length];
         for (int i = 0; i < raw.length; i++) {
             try {
@@ -59,4 +71,12 @@ public class Utils {
         }
         return results;
     }
+
+    public static void getSpeedData() {
+        listSpeedData.add(Utils.FAN_LOW);
+        listSpeedData.add(Utils.FAN_MED);
+        listSpeedData.add(Utils.FAN_HIGH);
+        listSpeedData.add(Utils.FAN_AUTO);
+    }
+
 }

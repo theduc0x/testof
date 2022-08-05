@@ -6,30 +6,62 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <Button
-        android:id="@+id/bt_on"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="100dp"
-        android:text="ON"/>
+   <com.google.android.material.appbar.AppBarLayout
+       android:id="@+id/abl_select_ac"
+       android:layout_width="match_parent"
+       android:layout_height="@dimen/_35sdp"
+       app:layout_constraintStart_toStartOf="parent"
+       app:layout_constraintTop_toTopOf="parent"
+       app:layout_scrollFlags="scroll|enterAlways"
+       android:background="@color/white">
 
-    <Button
-        android:id="@+id/bt_off"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:text="OFF"/>
+   <androidx.appcompat.widget.Toolbar
+       android:id="@+id/tb_select_ac"
+       android:layout_width="match_parent"
+       android:layout_height="wrap_content"
+       android:background="@color/white"
+       app:layout_scrollFlags="scroll|enterAlways">
+
+      <ImageView
+          android:id="@+id/iv_back_main"
+          android:layout_width="@dimen/_25sdp"
+          android:layout_height="@dimen/_25sdp"
+          android:scaleType="fitXY"
+          android:src="@drawable/ic_back"/>
+
+      <TextView
+          android:id="@+id/tv_select_ac"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_gravity="center_horizontal"
+          android:textSize="22dp"
+          android:textColor="@color/black"
+          android:text="@string/tv_select_ac"/>
+
+   </androidx.appcompat.widget.Toolbar>
+   </com.google.android.material.appbar.AppBarLayout>
+
+
+   <EditText
+      android:id="@+id/et_search_brand"
+      android:layout_width="match_parent"
+      android:layout_height="@dimen/_30sdp"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toBottomOf="@id/abl_select_ac"
+       android:layout_marginBottom="@dimen/_10sdp"
+       android:layout_marginStart="@dimen/_10sdp"
+       android:layout_marginEnd="@dimen/_10sdp"
+       android:paddingStart="@dimen/_15sdp"
+       android:clickable="false"
+       android:background="@drawable/bg_edit_text_select_ac"
+       android:textSize="@dimen/_14sdp"
+      android:hint="@string/tv_search_your_remote"/>
 
    <androidx.recyclerview.widget.RecyclerView
        android:id="@+id/lv_name"
        android:layout_width="match_parent"
        android:layout_height="wrap_content"
        app:layout_constraintStart_toStartOf="parent"
-       app:layout_constraintTop_toBottomOf="@id/bt_on"/>
+       app:layout_constraintTop_toBottomOf="@id/et_search_brand" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

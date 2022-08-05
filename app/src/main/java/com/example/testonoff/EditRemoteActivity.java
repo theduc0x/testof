@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
 
 import com.example.testonoff.models.ACDetail;
 
@@ -16,6 +17,7 @@ public class EditRemoteActivity extends AppCompatActivity {
     EditText etNameDevice;
     AppCompatButton btPaired;
     String fragment = "";
+    ImageView ivBack;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,6 +25,7 @@ public class EditRemoteActivity extends AppCompatActivity {
         setContentView(R.layout.activity_edit_remote);
         etNameDevice = findViewById(R.id.et_device_name);
         btPaired = findViewById(R.id.bt_paired);
+        ivBack = findViewById(R.id.iv_back_select);
         getDataIntent();
         MainActivity.showListRemoteDetail(fragment);
 
@@ -34,6 +37,15 @@ public class EditRemoteActivity extends AppCompatActivity {
                 startActivity(toActivityControl);
             }
         });
+
+        ivBack.setOnClickListener(v -> {
+            onBackPressed();
+        });
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
     }
 
     private void getDataIntent() {

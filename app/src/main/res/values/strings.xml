@@ -9,4 +9,7 @@
     <string name="tv_speed">Speed</string>
     <string name="tv_power_on">Power ON</string>
     <string name="tv_power_off">Power OFF</string>
+    <string name="tv_swing">Swing</string>
+    <string name="tv_search_your_remote">Search Your Remote</string>
+    <string name="tv_select_ac">Select AC</string>
 </resources>

@@ -49,7 +49,8 @@ public class PowerActivity extends AppCompatActivity {
 
         listAC = MainActivity.listAC;
         listNameDevice = MainActivity.listNameDevice;
-
+        // Thiết bị hiện tại tên là gì
+        deviceACCurrent = listNameDevice.get(1);
         adapter = new PowerTestAdapter(new IItemOnClickPowerTest() {
             @Override
             // Khi click PowerOn hoặc Off
@@ -75,8 +76,6 @@ public class PowerActivity extends AppCompatActivity {
                 openEditActivity(deviceACCurrent);
             }
         });
-        // Thiết bị hiện tại tên là gì
-        deviceACCurrent = listNameDevice.get(1);
 
         vp2Power.setAdapter(adapter);
         vp2Power.setOffscreenPageLimit(20);

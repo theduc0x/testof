@@ -3,11 +3,14 @@ package com.example.testonoff;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
+import android.annotation.SuppressLint;
 import android.hardware.ConsumerIrManager;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.testonoff.Util.Utils;
@@ -21,8 +24,11 @@ public class ControlsActivity extends AppCompatActivity {
     private ArrayList<ACDetail> listRemoteAc;
     private ACDetail acDetail;
     private TextView tvNameDevice;
+    private ImageView ivBack;
+    private Vibrator vibrator;
     private TextView tvDisPlayTemp, tvMode, tvSpeedFan;
-    private FrameLayout flPowerOn, flPowerOff, flMode, flReduce, flIncrease, flSpeed;
+    private TextView tvContainSpeed, tvContainMode, tvContainSwing;
+    private FrameLayout flPowerOn, flPowerOff, flReduce, flIncrease, flMode, flSpeed;
     private HashMap<String, String> speedListMap;
     private HashMap<String, String> modeListMap;
 
@@ -31,9 +37,17 @@ public class ControlsActivity extends AppCompatActivity {
     private String fan = "";
     private String mode = "";
     private String temp = "26";
+    private String maxTemp = "0";
+    private String minTemp = "0";
 
-    private ArrayList<String> listSpeedData;
+    private int MODE_TYPE = 0;
+    private int SPEED_TYPE = 0;
+    private int TEMP_UP_DOWN = 0;
+    // Xem nếu như button_fragment chứa T_ thì đó là device ko có mode, mà nó chỉ có chỉnh Nhiệt độ
+    private boolean DEVICE_CONTAIN_T = false;
+
     private ArrayList<String> listSpeedDataHave;
+    private ArrayList<String> listModeData;
 
     ConsumerIrManager irManager;
 
@@ -52,37 +66,42 @@ public class ControlsActivity extends AppCompatActivity {
             transPowerOff();
         });
         // Chế độ
-        flMode.setOnClickListener(v -> {
+        tvContainMode.setOnClickListener(v -> {
             transMode();
         });
         // Tốc đọ quạt
-        flSpeed.setOnClickListener(v -> {
+        tvContainSpeed.setOnClickListener(v -> {
             transSpeed();
         });
         // Giảm nhiệt đọ
         flReduce.setOnClickListener(v -> {
-            transReduceTemp();
+            tempRegulation(Utils.TEMP_REDUCE);
         });
         // Tăng nhiệt độ
         flIncrease.setOnClickListener(v -> {
-            transIncreaseTemp();
+            tempRegulation(Utils.TEMP_INCREASE);
+        });
+
+        ivBack.setOnClickListener(v -> {
+            onBackPressed();
         });
 
     }
 
     private void transPowerOn() {
+        disPlayViewVisible();
         acDetail = getAcDetail(Utils.POWER_ON);
         getDataAndTrans();
-        disPlayViewVisible();
     }
 
     private void transPowerOff() {
+        disPlayViewInvisible();
         acDetail = getAcDetail(Utils.POWER_OFF);
         getDataAndTrans();
-        disPlayViewInvisible();
     }
 
     private void transMode() {
+        disPlayViewVisible();
         if (tvMode.getText().toString().equals(Utils.MODE_COOLING_TEXT)) {
             tvMode.setText(Utils.MODE_HEAT_TEXT);
             mode = Utils.MODE_HEAT;
@@ -90,15 +109,16 @@ public class ControlsActivity extends AppCompatActivity {
             tvMode.setText(Utils.MODE_COOLING_TEXT);
             mode = Utils.MODE_COOL;
         }
-        mode = getButtonFragment();
 
+        mode = getButtonFragment();
         acDetail = getAcDetail(mode);
-        Log.d("Mode", acDetail.getMain_frame());
+        Log.d("DDDDMode", acDetail.getButton_fragment());
         getDataAndTrans();
-        disPlayViewVisible();
+
     }
 
     private void transSpeed() {
+        disPlayViewVisible();
 
         if (tvSpeedFan.getText().equals(Utils.SPEED_AUTO)) {
             tvSpeedFan.setText(Utils.SPEED_LOW);
@@ -113,39 +133,60 @@ public class ControlsActivity extends AppCompatActivity {
             tvSpeedFan.setText(Utils.SPEED_AUTO);
             fan = Utils.FAN_AUTO;
         }
-
-        for (int i = 0; i < listSpeedDataHave.size(); i++) {
-            if (fan.equals(listSpeedDataHave.get(i))) {
-                Log.d("DDDDD4", fan);
-                fan = getButtonFragment();
-                acDetail = getAcDetail(fan);
-                getDataAndTrans();
+        // Đây là trường hợp có speed nhưng chỉ có auto, không có mấy cái còn lại
+        if (SPEED_TYPE == 1) {
+            for (int i = 0; i < listSpeedDataHave.size(); i++) {
+                if (fan.equals(listSpeedDataHave.get(i))) {
+                    acDetail = getAcDetail(fan);
+                    Log.d("DDDDFan", acDetail.getButton_fragment());
+                    getDataAndTrans();
+                }
+            }
+        // TH bình thường
+        } else {
+            for (int i = 0; i < listSpeedDataHave.size(); i++) {
+                if (fan.equals(listSpeedDataHave.get(i))) {
+                    fan = getButtonFragment();
+                    acDetail = getAcDetail(fan);
+                    Log.d("DDDDFan", acDetail.getButton_fragment());
+                    getDataAndTrans();
+                }
             }
         }
-        disPlayViewVisible();
+
     }
 
-    private void transReduceTemp() {
-        int tempp = Integer.parseInt(temp) - 1;
+    /**
+     *
+     * @param regulation là Tăng hoặc giảm
+     */
+    private void tempRegulation(String regulation) {
+        disPlayViewVisible();
+        int tempp = 0;
+        if (regulation.equals(Utils.TEMP_INCREASE)) {
+            if (temp.equals(maxTemp)) {
+                return;
+            }
+            if (TEMP_UP_DOWN == 1) {
+                TEMP_UP_DOWN = 2;
+            }
+            tempp = Integer.parseInt(temp) + 1;
+        } else {
+            if (temp.equals(minTemp)) {
+                return;
+            }
+            if (TEMP_UP_DOWN == 1) {
+                TEMP_UP_DOWN = 3;
+            }
+            tempp = Integer.parseInt(temp) - 1;
+        }
         temp = String.valueOf(tempp);
         tvDisPlayTemp.setText(temp);
         String button_fragment = getButtonFragment();
+        Log.d("DDDDD44", button_fragment);
         acDetail = getAcDetail(button_fragment);
         getDataAndTrans();
-        Log.d("DDDDD44", button_fragment);
-        disPlayViewVisible();
-    }
 
-    private void transIncreaseTemp() {
-        int tempp = Integer.parseInt(temp) + 1;
-        temp = String.valueOf(tempp);
-        tvDisPlayTemp.setText(temp);
-        String button_fragment = getButtonFragment();
-        acDetail = getAcDetail(button_fragment);
-        getDataAndTrans();
-        Log.d("DDDDD44", button_fragment);
-
-        disPlayViewVisible();
     }
 
     // Gán tên thiết bị
@@ -160,11 +201,24 @@ public class ControlsActivity extends AppCompatActivity {
         transIRData(frequency, pattern);
     }
 
+    @SuppressLint("UseCompatLoadingForDrawables")
     private void initView() {
+        vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+
         irManager = (ConsumerIrManager) getSystemService(CONSUMER_IR_SERVICE);
+        flPowerOn = findViewById(R.id.fl_contain_power_on);
+        flPowerOff = findViewById(R.id.fl_contain_power_off);
+        tvContainMode = findViewById(R.id.tv_contain_mode);
+        flReduce = findViewById(R.id.fl_contain_reduce_temp);
+        flIncrease = findViewById(R.id.fl_contain_increased_temp);
+        flSpeed = findViewById(R.id.fl_contain_speed);
+        flMode = findViewById(R.id.fl_contain_mode);
+        tvContainSpeed = findViewById(R.id.tv_contain_speed);
+        tvContainSwing = findViewById(R.id.tv_contain_swing);
+        ivBack = findViewById(R.id.iv_back_home);
 
+        clDisPlayView = findViewById(R.id.cl_display_view);
         listRemoteAc = MainActivity.listRemoteAC;
-
         Log.d("DDDD", listRemoteAc.size() + "");
 
         tvNameDevice = findViewById(R.id.tv_name_device);
@@ -182,43 +236,155 @@ public class ControlsActivity extends AppCompatActivity {
         modeListMap.put(Utils.MODE_COOLING_TEXT, "C");
         modeListMap.put(Utils.MODE_HEAT_TEXT, "H");
 
-        listSpeedData = new ArrayList<>();
-        listSpeedData.add(Utils.FAN_LOW);
-        listSpeedData.add(Utils.FAN_MED);
-        listSpeedData.add(Utils.FAN_HIGH);
-        listSpeedData.add(Utils.FAN_AUTO);
+
+
+        listModeData = new ArrayList<>();
+
+        maxTemp = "20";
+        minTemp = "20";
 
         listSpeedDataHave = new ArrayList<>();
         // Xem với loại điều khiển này thì có những chức năng gì có trong database
         for (int i = 0; i < listRemoteAc.size(); i++) {
-            for (int j = 0; j < listSpeedData.size(); j++) {
-                if (listRemoteAc.get(i).getButton_fragment().equals(listSpeedData.get(j))) {
-                    listSpeedDataHave.add(listSpeedData.get(j));
+            // Xem trong device này có những điều chỉnh quạt nào, như auto, 1, 2, 3
+            for (int j = 0; j < Utils.listSpeedData.size(); j++) {
+                if (listRemoteAc.get(i).getButton_fragment().equals(Utils.listSpeedData.get(j))) {
+                    listSpeedDataHave.add(Utils.listSpeedData.get(j));
+                }
+            }
+            // Xem trong device này có những loại mode nào, như mode cool, heat, ..
+            for (int k = 0; k < Utils.listModeData.size(); k++) {
+                if (listRemoteAc.get(i).getButton_fragment().equals(Utils.listModeData.get(k))) {
+                    listModeData.add(Utils.listModeData.get(k));
                 }
             }
         }
-        setDataEntry();
-        flPowerOn = findViewById(R.id.fl_contain_power_on);
-        flPowerOff = findViewById(R.id.fl_contain_power_off);
-        flMode = findViewById(R.id.fl_contain_mode);
-        flReduce = findViewById(R.id.fl_contain_reduce_temp);
-        flIncrease = findViewById(R.id.fl_contain_increased_temp);
-        flSpeed = findViewById(R.id.fl_contain_speed);
+        /**
+         * SPEED_TYPE:
+         * 1: Có fan nhưng chỉ có auto, không có chế độ khác
+         * 2: Có đủ các loại fan Auto, 1, 2, 3
+         * 3: Chỉ có chế đọ fan speed riêng mà không kết hợp đc với temp + mode, ví dụ nhưn FAN_AUTO
+         * 4: Không có bất kỳ chế độ speed nào
+         */
 
-        clDisPlayView = findViewById(R.id.cl_display_view);
+
+        for (int i = 0; i < listRemoteAc.size(); i++) {
+            ACDetail ac = listRemoteAc.get(i);
+            if (ac.isSpeedFanExists()) {
+                SPEED_TYPE = 1;
+               if (ac.isSpeedFanFull()) {
+                   SPEED_TYPE = 2;
+                   break;
+               }
+            } else if (ac.isSpeedFan() && SPEED_TYPE == 0) {
+                SPEED_TYPE = 3;
+            }
+        }
+
+        /**
+         * MODE_TYPE
+         * 1: Có mode nhưng là các mode chế độ riêng, không kết hợp
+         * 2: Có đủ các loại mode kết hợp với fan + temp
+         * 3: Không có chọn chế độ mode
+         */
+
+        for (int i = 0; i < listRemoteAc.size(); i++) {
+            ACDetail ac = listRemoteAc.get(i);
+            if (ac.isMode()) {
+                MODE_TYPE = 1;
+            } else {
+                MODE_TYPE = 3;
+            }
+            if (ac.isModeFull()) {
+                MODE_TYPE = 2;
+                break;
+            }
+        }
+
+        for (ACDetail ac : listRemoteAc) {
+            if (ac.isTempUpDown()) {
+                TEMP_UP_DOWN = 1;
+            }
+        }
+
+        Log.d("DDDDCHECK_SPEED", SPEED_TYPE+"");
+        Log.d("DDDDCHECK_MODE", MODE_TYPE+"");
+        Log.d("DDDDK", listModeData.size()+"");
+        /**
+         * Có 2 device, 1 loại chỉ có chỉnh nhiệt độ, 1 loại chỉnh nhiệt độ và cả speed, mode
+         * Nếu như chỉ điều chỉnh nhiệt độ thì sẽ chạy speed, mode về ban đầu,
+         * Nếu DEVICE_CONTAIN_T = true thì có nghĩa là chỉ có điều chỉnh nhiệt độ thôi
+         */
+        for (int i = 0; i < listRemoteAc.size(); i++) {
+            DEVICE_CONTAIN_T = listRemoteAc.get(i).isButtonFragmentContainT_();
+            if (DEVICE_CONTAIN_T) {
+                break;
+            }
+        }
+        /**
+         * Tìm xem TempMax và TempMin
+         */
+        for (int i = 0; i < listRemoteAc.size(); i++) {
+            if (!listRemoteAc.get(i).getTemp().equals("")) {
+                if (Integer.parseInt(maxTemp) < Integer.parseInt(listRemoteAc.get(i).getTemp())) {
+                    maxTemp = listRemoteAc.get(i).getTemp();
+                }
+                if (Integer.parseInt(minTemp) > Integer.parseInt(listRemoteAc.get(i).getTemp())) {
+                    minTemp = listRemoteAc.get(i).getTemp();
+                }
+            }
+        }
+
+
+        Log.d("DDDDDDevice_contain_t", DEVICE_CONTAIN_T+"");
+
+        setDataEntry();
+
+        // Nếu không có mode hoặc speed thì sẽ ko cho dùng
+        // Nếu không có danh sách speed  nhưng tồn tại SPEED trong database
+        if (listSpeedDataHave.size() == 0 && (SPEED_TYPE == 0 || SPEED_TYPE == 3)) {
+            tvContainSpeed.setEnabled(false);
+            flSpeed.setBackground(getResources().getDrawable(R.color.enable_false));
+        }
+        // Nếu list không có mode nhưng trong database lại có thì vẫn chạy đc
+        if (listModeData.size() == 0 && MODE_TYPE == 3) {
+            tvContainMode.setEnabled(false);
+            flMode.setBackground(getResources().getDrawable(R.color.enable_false));
+        }
     }
 
-    // Đặt dữ liệu ban đầu
+    // Đặt dữ liệu ban đầu, để Mode là Cool và fan là auto
     private void setDataEntry() {
         tvMode.setText(Utils.MODE_COOLING_TEXT);
         tvSpeedFan.setText(Utils.SPEED_AUTO);
     }
 
-
+    /**
+     *
+     * @return trả về tên nút cần tìm, sau đó sẽ gọi getAcDetail để lấy các nội dung chi tiết
+     */
     private String getButtonFragment() {
-        String name = temp + "_F_";
-        name += speedListMap.get(tvSpeedFan.getText().toString().trim()) + "_";
-        name += modeListMap.get(tvMode.getText().toString().trim());
+        String name = "";
+        if (DEVICE_CONTAIN_T) {
+            name = "T_" + temp;
+        // Đây là TH mà remote chỉ có mỗi điều khiển auto mà ko có mức fan khác
+        } else  if (SPEED_TYPE == 1) {
+            name = temp + "_F_";
+            name +=  "A_";
+            name += modeListMap.get(tvMode.getText().toString().trim());
+        } else if (TEMP_UP_DOWN == 2) {
+            name = "TempUp";
+            TEMP_UP_DOWN = 1;
+        } else if (TEMP_UP_DOWN == 3) {
+            name = "TempDown";
+            TEMP_UP_DOWN = 1;
+        }
+        else {
+            name = temp + "_F_";
+            name += speedListMap.get(tvSpeedFan.getText().toString().trim()) + "_";
+            name += modeListMap.get(tvMode.getText().toString().trim());
+        }
+
         return name;
     }
 
@@ -233,8 +399,9 @@ public class ControlsActivity extends AppCompatActivity {
     }
 
     /**
+     * list RemoteAc là danh sách các nút như PowerOn, ....
      * @param button_fragment là tên tên nút cần tìm (ví dụ PowerOn)
-     * @return trả về là 1 ACDetail
+     * @return trả về là 1 ACDetail là chi tiết của 1 nút
      */
     private ACDetail getAcDetail(String button_fragment) {
         ACDetail acDetail1 = null;
@@ -250,16 +417,12 @@ public class ControlsActivity extends AppCompatActivity {
     // Hiển thị view khi nhấn
     private void disPlayViewVisible() {
         clDisPlayView.setVisibility(View.VISIBLE);
+        vibrator.vibrate(100);
     }
 
     // Ẩn màn hình hiển thị
     private void disPlayViewInvisible() {
         clDisPlayView.setVisibility(View.INVISIBLE);
-    }
-    // Reload lại màn hình display
-    private void loadDisPlay() {
-        tvDisPlayTemp.setText(temp);
-        tvMode.setText(mode);
-        tvSpeedFan.setText(fan);
+        vibrator.vibrate(100);
     }
 }

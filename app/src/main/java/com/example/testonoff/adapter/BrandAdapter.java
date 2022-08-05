@@ -1,9 +1,12 @@
 package com.example.testonoff.adapter;
 
 import android.annotation.SuppressLint;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -14,19 +17,23 @@ import com.example.testonoff.R;
 import com.example.testonoff.my_interface.IItemOnClickOpenBrand;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
-public class BrandAdapter extends RecyclerView.Adapter<BrandAdapter.BrandViewHolder> {
+public class BrandAdapter extends RecyclerView.Adapter<BrandAdapter.BrandViewHolder> implements Filterable {
     private ArrayList<String> listBrand;
-    IItemOnClickOpenBrand onClickOpenBrand;
+    private ArrayList<String> listBrandOld;
+    private IItemOnClickOpenBrand onClickOpenBrand;
 
     public BrandAdapter(IItemOnClickOpenBrand onClickOpenBrand) {
         this.onClickOpenBrand = onClickOpenBrand;
+
     }
 
     @SuppressLint("NotifyDataSetChanged")
     public void setData(ArrayList<String> listBrand) {
         this.listBrand = listBrand;
-        notifyDataSetChanged();
+        this.listBrandOld =listBrand;
+                notifyDataSetChanged();
     }
     @NonNull
     @Override
@@ -71,4 +78,39 @@ public class BrandAdapter extends RecyclerView.Adapter<BrandAdapter.BrandViewHol
             tvBrand.setText(titleBrand);
         }
     }
+
+    @Override
+    public Filter getFilter() {
+        return new Filter() {
+            @Override
+            protected FilterResults performFiltering(CharSequence constraint) {
+                String strSearch = constraint.toString();
+                int i = strSearch.length();
+                listBrand = null;
+                if (strSearch.isEmpty()) {
+                    listBrand = listBrandOld;
+                } else {
+                    ArrayList<String> list = new ArrayList<>();
+                    for (String s : listBrandOld) {
+                        if (s.toLowerCase().contains(strSearch.toLowerCase())) {
+                             list.add(s);
+                             Log.d("ABDCC", s.toString());
+                        }
+
+                    }
+                    listBrand = list;
+                }
+                FilterResults filterResults = new FilterResults();
+                filterResults.values = listBrand;
+                return filterResults;
+            }
+
+            @Override
+            protected void publishResults(CharSequence constraint, FilterResults results) {
+                listBrand = (ArrayList<String>) results.values;
+                notifyDataSetChanged();
+            }
+        };
+    }
+
 }

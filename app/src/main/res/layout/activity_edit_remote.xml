@@ -22,9 +22,9 @@
             app:layout_scrollFlags="scroll|enterAlways">
 
             <ImageView
-                android:id="@+id/iv_youtube"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
+                android:id="@+id/iv_back_select"
+                android:layout_width="@dimen/_25sdp"
+                android:layout_height="@dimen/_25sdp"
                 android:scaleType="fitXY"
                 android:src="@drawable/ic_back"/>
 

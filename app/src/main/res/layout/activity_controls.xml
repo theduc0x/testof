@@ -23,7 +23,7 @@
             app:layout_scrollFlags="scroll|enterAlways">
 
             <ImageView
-                android:id="@+id/iv_youtube"
+                android:id="@+id/iv_back_home"
                 android:layout_width="@dimen/_35sdp"
                 android:layout_height="match_parent"
                 android:scaleType="fitXY"
@@ -279,20 +279,44 @@
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 app:layout_constraintHeight_percent="0.3"
-                app:layout_constraintWidth_percent="0.5"
+                app:layout_constraintWidth_percent="0.3333333"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/fl_contain_reduce_temp"
-                android:focusable="true"
-                android:clickable="true"
-                android:background="?android:attr/selectableItemBackground">
+                app:layout_constraintTop_toBottomOf="@id/fl_contain_reduce_temp">
 
                 <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
+                    android:id="@+id/tv_contain_speed"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:focusable="true"
+                    android:clickable="true"
+                    android:background="?android:attr/selectableItemBackground"
                     android:textSize="@dimen/_20sdp"
                     android:textColor="@color/black"
                     android:text="@string/tv_speed"/>
+            </FrameLayout>
+
+            <FrameLayout
+                android:id="@+id/fl_contain_swing"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                app:layout_constraintHeight_percent="0.3"
+                app:layout_constraintWidth_percent="0.3333333"
+                app:layout_constraintStart_toEndOf="@id/fl_contain_speed"
+                app:layout_constraintTop_toBottomOf="@id/fl_contain_increased_temp"
+                android:background="@color/enable_false">
+
+                <TextView
+                    android:id="@+id/tv_contain_swing"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:focusable="true"
+                    android:clickable="true"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:textSize="@dimen/_20sdp"
+                    android:textColor="@color/black"
+                    android:text="@string/tv_swing"/>
             </FrameLayout>
 
             <FrameLayout
@@ -300,17 +324,18 @@
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 app:layout_constraintHeight_percent="0.3"
-                app:layout_constraintWidth_percent="0.5"
+                app:layout_constraintWidth_percent="0.3333333"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/fl_contain_increased_temp"
-                android:focusable="true"
-                android:clickable="true"
-                android:background="?android:attr/selectableItemBackground">
+                app:layout_constraintTop_toBottomOf="@id/fl_contain_increased_temp">
 
                 <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
+                    android:id="@+id/tv_contain_mode"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:focusable="true"
+                    android:clickable="true"
+                    android:background="?android:attr/selectableItemBackground"
                     android:textSize="@dimen/_20sdp"
                     android:textColor="@color/black"
                     android:text="@string/tv_mode"/>
@@ -330,6 +355,14 @@
                 app:layout_constraintStart_toStartOf="@id/fl_contain_speed"
                 app:layout_constraintTop_toBottomOf="@id/fl_contain_speed"
                 android:background="@color/line_horizontal"/>
+
+            <View
+                android:layout_width="@dimen/_1sdp"
+                android:layout_height="0dp"
+                app:layout_constraintHeight_percent="0.3"
+                app:layout_constraintStart_toEndOf="@id/fl_contain_swing"
+                app:layout_constraintTop_toBottomOf="@id/fl_contain_reduce_temp"
+                android:background="@color/line_horizontal" />
 
 
         </androidx.constraintlayout.widget.ConstraintLayout>

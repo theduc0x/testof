@@ -9,4 +9,6 @@
     <color name="white">#FFFFFFFF</color>
     <color name="line_horizontal">#7EE0D6D6</color>
     <color name="bg_display">#7EB5ACAC</color>
+    <color name="enable_false">#34A19797</color>
+    <color name="edit_text">#34B6AAAA</color>
 </resources>
